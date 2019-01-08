@@ -1,0 +1,160 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "environmentNameAbbreviation": {
+            "type": "string",
+            "maxLength": 4
+        },
+        "sqlServerAdminUsername": {
+            "type": "string"
+        },
+        "sqlServerAdminPassword": {
+            "type": "securestring"
+        },
+        "sqlServerActiveDirectoryAdminLogin": {
+            "type": "string"
+        },
+        "sqlServerActiveDirectoryAdminObjectId": {
+            "type": "string"
+        },
+        "threatDetectionEmailAddress": {
+            "type": "string"
+        },
+        "appServicePlanSize": {
+            "type": "string",
+            "allowedValues": [
+                "1",
+                "2",
+                "3"
+            ]
+        },
+        "appServicePlanInstances": {
+            "type": "int",
+            "minValue": 1
+        }
+    },
+    "variables": {
+        "resourceNamePrefix": "[concat('tl-', toLower(parameters('environmentNameAbbreviation')))]",
+        "sqlServerName": "[concat(variables('resourceNamePrefix'), '-shared-sql')]",
+        "sharedStorageAccountName": "[replace(concat(variables('resourceNamePrefix'), 'sharedstr'), '-', '')]",
+        "azureSearchName": "[concat(variables('resourceNamePrefix'), '-shared-azs')]",
+        "appServicePlanName": "[concat(variables('resourceNamePrefix'), '-shared-asp')]",
+        "configStorageAccountName": "[replace(concat(variables('resourceNamePrefix'), 'configstr'), '-', '')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2017-05-10",
+            "name": "sharedStorageAccount",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/tl-platform-building-blocks/master/templates/storage-account-arm.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "storageAccountName": {
+                        "value": "[variables('sharedStorageAccountName')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "sqlServer",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/tl-platform-building-blocks/master/templates/sql-server.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "sqlServerName": {
+                        "value": "[variables('sqlServerName')]"
+                    },
+                    "sqlServerAdminUserName": {
+                        "value": "[parameters('sqlServerAdminUsername')]"
+                    },
+                    "sqlServerAdminPassword": {
+                        "value": "[parameters('sqlServerAdminPassword')]"
+                    },
+                    "sqlServerActiveDirectoryAdminLogin": {
+                        "value": "[parameters('sqlServerActiveDirectoryAdminLogin')]"
+                    },
+                    "sqlServerActiveDirectoryAdminObjectId": {
+                        "value": "[parameters('sqlServerActiveDirectoryAdminObjectId')]"
+                    },
+                    "threatDetectionEmailAddress": {
+                        "value": "[parameters('threatDetectionEmailAddress')]"
+                    },
+                    "sqlStorageAccountName": {
+                        "value": "[variables('sharedStorageAccountName')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "sharedStorageAccount"
+            ]
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "azureSearch",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/tl-platform-building-blocks/master/templates/azure-search.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "azureSearchName": {
+                        "value": "[variables('azureSearchName')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "appServicePlan",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/tl-platform-building-blocks/master/templates/app-service-plan.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "appServicePlanName": {
+                        "value": "[variables('appServicePlanName')]"
+                    },
+                    "aspSize": {
+                        "value": "[parameters('appServicePlanSize')]"
+                    },
+                    "aspInstances": {
+                        "value": "[parameters('appServicePlanInstances')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "configStorageAccount",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/tl-platform-building-blocks/master/templates/storage-account-arm.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "storageAccountName": {
+                        "value": "[variables('configStorageAccountName')]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}
