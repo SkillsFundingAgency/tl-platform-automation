@@ -1,11 +1,19 @@
+name: $(majorVersion).$(minorVersion).$(rev:r)
+
+variables:
+  majorVersion: "0"
+  minorVersion: "1"
+
 trigger:
   batch: true
   branches:
     include:
-      - +*
+      - "*"
   paths:
     include:
-      - shared-infrastructure/*
+      - "shared-infrastructure/*"
+
+pr: none
 
 pool:
   name: "Continuous Integration 02 - SSD - 160ACU"
