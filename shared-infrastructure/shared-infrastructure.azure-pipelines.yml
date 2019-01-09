@@ -6,11 +6,13 @@ variables:
 
 trigger:
   batch: true
+  branches:
+    include:
+      - "*"
   paths:
     include:
-      - shared-infrastructure/*
+      - "shared-infrastructure/*"
 
-pr: none
 pool:
   name: "Continuous Integration 02 - SSD - 160ACU"
 
