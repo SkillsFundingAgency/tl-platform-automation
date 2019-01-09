@@ -12,7 +12,7 @@ steps:
     displayName: "Copy Files to: $(build.artifactstagingdirectory)"
     inputs:
       Contents: |
-        shared-infrastructure\**
+        shared-infrastructure\**\*.json
       TargetFolder: "$(build.artifactstagingdirectory)"
       OverWrite: true
 
