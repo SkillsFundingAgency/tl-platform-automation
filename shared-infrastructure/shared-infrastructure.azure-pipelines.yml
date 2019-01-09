@@ -1,5 +1,8 @@
 trigger:
   batch: true
+  branches:
+    include:
+      - +*
   paths:
     include:
       - shared-infrastructure/*
