@@ -38,7 +38,6 @@
         "resourceNamePrefix": "[concat('tl-', toLower(parameters('environmentNameAbbreviation')))]",
         "sqlServerName": "[concat(variables('resourceNamePrefix'), '-shared-sql')]",
         "sharedStorageAccountName": "[replace(concat(variables('resourceNamePrefix'), 'sharedstr'), '-', '')]",
-        "azureSearchName": "[concat(variables('resourceNamePrefix'), '-shared-azs')]",
         "appServicePlanName": "[concat(variables('resourceNamePrefix'), '-shared-asp')]",
         "configStorageAccountName": "[replace(concat(variables('resourceNamePrefix'), 'configstr'), '-', '')]"
     },
@@ -97,23 +96,6 @@
             "dependsOn": [
                 "sharedStorageAccount"
             ]
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "azureSearch",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/tl-platform-building-blocks/master/templates/azure-search.json",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "azureSearchName": {
-                        "value": "[variables('azureSearchName')]"
-                    }
-                }
-            }
         },
         {
             "apiVersion": "2017-05-10",
