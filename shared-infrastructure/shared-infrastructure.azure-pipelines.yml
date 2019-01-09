@@ -1,4 +1,4 @@
-name: $(majorVersion).$(minorVersion).$(rev:.r)
+name: $(majorVersion).$(minorVersion).$(rev:r)
 
 variables:
   majorVersion: "0"
