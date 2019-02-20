@@ -32,25 +32,60 @@
         "appServicePlanInstances": {
             "type": "int",
             "minValue": 1
+        },
+        "azureWebsitesRPObjectId": {
+            "type": "string"
+        },
+        "keyVaultReadWriteObjectIds": {
+            "type": "array"
         }
     },
     "variables": {
+        "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/tl-platform-building-blocks/master/templates/",
         "resourceNamePrefix": "[concat('tl-', toLower(parameters('environmentNameAbbreviation')))]",
         "sqlServerName": "[concat(variables('resourceNamePrefix'), '-shared-sql')]",
         "sharedStorageAccountName": "[replace(concat(variables('resourceNamePrefix'), 'sharedstr'), '-', '')]",
         "appServicePlanName": "[concat(variables('resourceNamePrefix'), '-shared-asp')]",
         "configStorageAccountName": "[replace(concat(variables('resourceNamePrefix'), 'configstr'), '-', '')]",
-        "keyVaultName": "[concat(variables('resourceNamePrefix'), '-shared-kv')]"
+        "keyVaultName": "[concat(variables('resourceNamePrefix'), '-shared-kv')]",
+        "keyVaultAccessPolicies": [
+            {
+                "objectId": "[parameters('azureWebsitesRPObjectId')]",
+                "tenantId": "[subscription().tenantId]",
+                "permissions": {
+                    "secrets": [
+                        "Get"
+                    ]
+                }
+            }
+        ],
+        "copy": [
+            {
+                "name": "readWriteAccessPolicies",
+                "count": "[length(parameters('keyVaultReadWriteObjectIds'))]",
+                "input": {
+                    "objectId": "[parameters('keyVaultReadWriteObjectIds')[copyIndex('readWriteAccessPolicies')]]",
+                    "tenantId": "[subscription().tenantId]",
+                    "permissions": {
+                        "secrets": [
+                            "Get",
+                            "List",
+                            "Set"
+                        ]
+                    }
+                }
+            }
+        ]
     },
     "resources": [
         {
             "apiVersion": "2017-05-10",
-            "name": "sharedStorageAccount",
+            "name": "shared-storage-account",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/tl-platform-building-blocks/master/templates/storage-account-arm.json",
+                    "uri": "[concat(variables('deploymentUrlBase'),'storage-account-arm.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -62,12 +97,12 @@
         },
         {
             "apiVersion": "2017-05-10",
-            "name": "sqlServer",
+            "name": "sql-server",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/tl-platform-building-blocks/master/templates/sql-server.json",
+                    "uri": "[concat(variables('deploymentUrlBase'),'sql-server.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -95,17 +130,17 @@
                 }
             },
             "dependsOn": [
-                "sharedStorageAccount"
+                "shared-storage-account"
             ]
         },
         {
             "apiVersion": "2017-05-10",
-            "name": "appServicePlan",
+            "name": "app-service-plan",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/tl-platform-building-blocks/master/templates/app-service-plan.json",
+                    "uri": "[concat(variables('deploymentUrlBase'),'app-service-plan.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -123,12 +158,12 @@
         },
         {
             "apiVersion": "2017-05-10",
-            "name": "configStorageAccount",
+            "name": "config-storage-account",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/tl-platform-building-blocks/master/templates/storage-account-arm.json",
+                    "uri": "[concat(variables('deploymentUrlBase'),'storage-account-arm.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -140,17 +175,23 @@
         },
         {
             "apiVersion": "2017-05-10",
-            "name": "keyVault",
+            "name": "key-vault",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/tl-platform-building-blocks/master/templates/keyvault.json",
+                    "uri": "[concat(variables('deploymentUrlBase'),'keyvault.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
                     "keyVaultName": {
                         "value": "[variables('keyVaultName')]"
+                    },
+                    "enabledForTemplateDeployment": {
+                        "value": true
+                    },
+                    "keyVaultAccessPolicies": {
+                        "value": "[concat(variables('keyVaultAccessPolicies'), variables('readWriteAccessPolicies'))]"
                     }
                 }
             }
