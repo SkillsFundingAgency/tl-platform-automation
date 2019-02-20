@@ -190,6 +190,9 @@
                     "enabledForTemplateDeployment": {
                         "value": true
                     },
+                    "enableSoftDelete": {
+                        "value": true
+                    },
                     "keyVaultAccessPolicies": {
                         "value": "[concat(variables('keyVaultAccessPolicies'), variables('readWriteAccessPolicies'))]"
                     }
