@@ -21,6 +21,14 @@
         "threatDetectionEmailAddress": {
             "type": "string"
         },
+        "appServicePlanTier": {
+            "type": "string",
+            "allowedValues": [
+                "Standard",
+                "Premium",
+                "PremiumV2"
+            ]
+        },
         "appServicePlanSize": {
             "type": "string",
             "allowedValues": [
@@ -146,6 +154,9 @@
                 "parameters": {
                     "appServicePlanName": {
                         "value": "[variables('appServicePlanName')]"
+                    },
+                    "nonASETier": {
+                        "value": "[parameters('appServicePlanTier')]"
                     },
                     "aspSize": {
                         "value": "[parameters('appServicePlanSize')]"
